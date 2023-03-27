@@ -1,7 +1,12 @@
 import re, sys, json
 
-import stashapi.log as log
-from stashapi.stashapp import StashInterface
+try:
+    import stashapi.log as log
+    from stashapi.stashapp import StashInterface
+except ModuleNotFoundError:
+    print("You need to install stashapp-tools. (https://pypi.org/project/stashapp-tools/)", file=sys.stderr)
+    print("If you have pip (normally installed with python), run this command in a terminal (cmd): 'pip install stashapp-tools'", file=sys.stderr)
+    sys.exit()
 
 import body_tags
 from body_tags import BodyShape, BodyType, BreastSize, ButtSize
