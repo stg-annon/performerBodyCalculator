@@ -9,7 +9,7 @@ except ModuleNotFoundError:
     sys.exit()
 
 import body_tags
-from body_tags import BodyShape, BodyType, BreastSize, ButtSize
+from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize
 
 TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize]
 CM_TO_INCH = 2.54
@@ -133,6 +133,11 @@ class StashPerformer:
         self.waist   = float(m.get("waist",0))
         self.hips    = float(m.get("hips", 0))
 
+        if self.weight:
+            self.weight = float(self.weight)
+        if self.height:
+            self.height = float(self.height)
+
         # convert metric to imperial
         if self.band > 50 and self.waist > 50 and self.hips > 50:
             self.band  = self.band / CM_TO_INCH
@@ -149,8 +154,6 @@ class StashPerformer:
     def calculate_bmi(self):
         if not self.weight or not self.height:
             return
-        self.weight = float(self.weight)
-        self.height = float(self.height)
         self.bmi = (self.weight / (self.height*self.height)) * 10000
 
     def match_body_shapes(self):
@@ -164,6 +167,10 @@ class StashPerformer:
         if not self.bmi or not self.body_shapes:
             return
         self.descriptor = body_tags.get_enum_for_threshold(self.bmi, BodyType)
+        
+        op, short_threshold = HeightType.SHORT.value.threshold
+        if self.descriptor == BodyType.FIT and op(self.height, short_threshold):
+            self.descriptor = BodyType.PETITE
         if self.descriptor == BodyType.AVERAGE and any(bs in self.body_shapes for bs in body_tags.CURVY_SHAPES):
             self.descriptor = BodyType.CURVY
 
