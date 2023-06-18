@@ -166,10 +166,9 @@ class StashPerformer:
         self.descriptor = None
         if not self.bmi or not self.body_shapes:
             return
-        self.descriptor = body_tags.get_enum_for_threshold(self.bmi, BodyType)
+        self.descriptor = BodyType.match_threshold(self.bmi)
         
-        op, short_threshold = HeightType.SHORT.value.threshold
-        if self.descriptor == BodyType.FIT and op(self.height, short_threshold):
+        if self.descriptor == BodyType.FIT and HeightType.SHORT.within_threshold(self.height):
             self.descriptor = BodyType.PETITE
         if self.descriptor == BodyType.AVERAGE and any(bs in self.body_shapes for bs in body_tags.CURVY_SHAPES):
             self.descriptor = BodyType.CURVY
@@ -179,13 +178,13 @@ class StashPerformer:
         self.breast_size = None
         if not self.cupsize or not self.bust:
             return
-        self.breast_size = body_tags.get_enum_for_threshold(self.bust, BreastSize)
+        self.breast_size = BreastSize.match_threshold(self.bust)
 
     def set_butt_size(self):
         self.butt_size = None
         if not self.hips:
             return
-        self.butt_size = body_tags.get_enum_for_threshold(self.hips, ButtSize)
+        self.butt_size = ButtSize.match_threshold(self.hips)
 
     def get_tag_updates(self, tag_updates={}):
         for body_shape in self.body_shapes:

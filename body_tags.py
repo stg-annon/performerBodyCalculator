@@ -45,6 +45,18 @@ class StashTagEnumComparable(StashTagEnum):
             pass
         return NotImplemented
     
+    def within_threshold(self, compare_value):
+        if not self.value.threshold:
+            return
+        op, value = self.value.threshold
+        return op(compare_value, value)
+
+    @classmethod
+    def match_threshold(cls, compare_value):
+        for enum in cls:
+            if enum.within_threshold(compare_value):
+                return enum
+    
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
     HOURGLASS = StashTagDC(
@@ -177,14 +189,6 @@ def calculate_shape(performer):
         shapes.append(BodyShape.OVAL)
 
     return shapes
-
-def get_enum_for_threshold(search_value, enum_class):
-    for enum in enum_class:
-        if not enum.value.threshold:
-            continue
-        op, value = enum.value.threshold
-        if op(search_value, value):
-            return enum
 
 # SEE: https://en.wikipedia.org/wiki/Bra_size#The_meaning_of_cup_sizes_varies
 # "cup size approximates the difference between the Over-the-bust and band measurements in inches"
