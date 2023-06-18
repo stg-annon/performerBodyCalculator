@@ -96,12 +96,18 @@ class BodyShape(StashTagEnum):
 # threshold based off of performer.bmi
 CURVY_SHAPES = [BodyShape.TOP_HOURGLASS, BodyShape.BOTTOM_HOURGLASS, BodyShape.HOURGLASS]
 class BodyType(StashTagEnumComparable):
-    SKINNY  = StashTagDC("Skinny Body", threshold=(operator.lt, 18))
-    PETITE  = StashTagDC("Petite Body", threshold=(operator.lt, 23))
-    AVERAGE = StashTagDC("Average Body",threshold=(operator.lt, 29))
+    PETITE  = StashTagDC("Petite Body", threshold=None)
     CURVY   = StashTagDC("Curvy Body",  threshold=None)
+    SKINNY  = StashTagDC("Skinny Body", threshold=(operator.lt, 18))
+    FIT     = StashTagDC("Fit Body",    threshold=(operator.lt, 23))
+    AVERAGE = StashTagDC("Average Body",threshold=(operator.lt, 29))
     BBW     = StashTagDC("BBW Body",    threshold=(operator.lt, 55))
     SSBBW   = StashTagDC("SSBBW Body",  threshold=(operator.ge, 55))
+
+# threshold based off of performer.height
+class HeightType(StashTagEnumComparable):
+    SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
+    TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
 
 # threshold based off of performer.bust
 class BreastSize(StashTagEnumComparable):
@@ -172,7 +178,7 @@ def calculate_shape(performer):
 
     return shapes
 
-def get_enum_for_threshold(search_value ,enum_class):
+def get_enum_for_threshold(search_value, enum_class):
     for enum in enum_class:
         if not enum.value.threshold:
             continue
