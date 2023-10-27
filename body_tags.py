@@ -121,14 +121,14 @@ class HeightType(StashTagEnumComparable):
     SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
     TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
 
-# threshold based off of performer.bust
+# threshold based off of performer.breast_volume
 class BreastSize(StashTagEnumComparable):
-    TINY    = StashTagDC("Tiny Breasts",   threshold=(operator.lt, 27))
-    SMALL   = StashTagDC("Small Breasts",  threshold=(operator.lt, 32))
-    MEDIUM  = StashTagDC("Medium Breasts", threshold=(operator.lt, 37))
-    LARGE   = StashTagDC("Large Breasts",  threshold=(operator.lt, 42))
-    HUGE    = StashTagDC("Huge Breasts",   threshold=(operator.lt, 47))
-    MASSIVE = StashTagDC("Massive Breasts",threshold=(operator.ge, 47))
+    TINY    = StashTagDC("Tiny Breasts",   threshold=(operator.lt, 16))
+    SMALL   = StashTagDC("Small Breasts",  threshold=(operator.lt, 19))
+    MEDIUM  = StashTagDC("Medium Breasts", threshold=(operator.lt, 23))
+    LARGE   = StashTagDC("Large Breasts",  threshold=(operator.lt, 27))
+    HUGE    = StashTagDC("Huge Breasts",   threshold=(operator.lt, 31))
+    MASSIVE = StashTagDC("Massive Breasts",threshold=(operator.ge, 31))
 
 # threshold based off of performer.hips 
 class ButtSize(StashTagEnumComparable):

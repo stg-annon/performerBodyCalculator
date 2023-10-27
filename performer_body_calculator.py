@@ -92,11 +92,12 @@ class StashPerformer:
 
         self.__dict__.update(resp)
 
-        self.cupsize = ""
-        self.band    = 0.0
-        self.waist   = 0.0
-        self.hips    = 0.0
-        self.bust    = None
+        self.cupsize       = ""
+        self.band          = 0.0
+        self.waist         = 0.0
+        self.hips          = 0.0
+        self.bust          = None
+        self.breast_volume = None
         
         self.bmi = 0
         self.body_shapes = []
@@ -148,7 +149,9 @@ class StashPerformer:
         for bust_diff, cup_list in enumerate(body_tags.BUST_DIFF_IDX):
             if self.cupsize in cup_list:
                 self.bust = self.band + bust_diff
-        if not self.bust:
+                self.breast_volume = (self.band / 2.0) + bust_diff
+                log.debug(f"Bra size {int(self.band)}{self.cupsize} converted to {(self.band / 2.0)} + {bust_diff} = {self.breast_volume} volume points")
+        if not self.breast_volume:
             raise Exception(f"could not identify cupsize '{self.cupsize}' add to 'BUST_DIFF_IDX' list")
 
     def calculate_bmi(self):
@@ -176,9 +179,9 @@ class StashPerformer:
     def set_breast_size(self):
         self.bust_band_diff = None
         self.breast_size = None
-        if not self.cupsize or not self.bust:
+        if not self.cupsize or not self.breast_volume:
             return
-        self.breast_size = BreastSize.match_threshold(self.bust)
+        self.breast_size = BreastSize.match_threshold(self.breast_volume)
 
     def set_butt_size(self):
         self.butt_size = None
