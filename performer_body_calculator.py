@@ -45,12 +45,7 @@ def run_calculator():
         enumtag_stash_init(enum_class, all_tag_ids, tag_updates)
 
     # get performers with measurements
-    performers = stash.find_performers({
-        "measurements": {
-            "value": "",
-            "modifier": "NOT_NULL"
-        }
-    }, fragment="id name measurements weight height")
+    performers = stash.find_performers(fragment="id name measurements weight height")
     
     log.info("Removing existing plugin tags...")
     stash.update_performers({
@@ -113,7 +108,16 @@ class StashPerformer:
         self.set_type_descriptor()
          
     def parse_measurements(self):
+        if self.weight:
+            self.weight = float(self.weight)
+        if self.height:
+            self.height = float(self.height)
+
         self.measurements = self.measurements.replace(" ", "")
+
+        if self.measurements == "":
+            log.debug(f"No measurements found for {str(self)}")
+            return
 
         # Full Measurements | Band, Cup Size, Waist, Hips | Example: "32D-28-34"
         band_cup_waist_hips = re.match(r'^(?P<band>\d+)(?P<cupsize>[a-zA-Z]+)\-(?P<waist>\d+)\-(?P<hips>\d+)$', self.measurements)
@@ -142,11 +146,6 @@ class StashPerformer:
             self.waist   = float(m.get("waist",0))
         if m.get("hips"):
             self.hips    = float(m.get("hips", 0))
-
-        if self.weight:
-            self.weight = float(self.weight)
-        if self.height:
-            self.height = float(self.height)
 
         # convert metric to imperial
         if self.band and self.band > 50 and self.waist and self.waist > 50 and self.hips and self.hips > 50:
@@ -179,19 +178,19 @@ class StashPerformer:
         if not self.body_shapes:
             p_id = f"{self.name} ({self.id})"
             if not self.bust or not self.waist or not self.hips:
-                log.warning(f"{p_id:>30}: could not classify bodyshape, missing required measurements")
+                log.debug(f"{p_id:>30}: could not classify bodyshape, missing required measurements")
             else:
                 log.warning(f"{p_id:>30}: could not classify bodyshape bust={self.bust:.0f} waist={self.waist:.0f} hips={self.hips:.0f}")
 
     def set_type_descriptor(self):
         self.descriptor = None
-        if not self.bmi or not self.body_shapes:
+        if not self.bmi:
             return
         self.descriptor = BodyType.match_threshold(self.bmi)
         
         if self.descriptor == BodyType.FIT and HeightType.SHORT.within_threshold(self.height):
             self.descriptor = BodyType.PETITE
-        if self.descriptor == BodyType.AVERAGE and any(bs in self.body_shapes for bs in body_tags.CURVY_SHAPES):
+        if self.descriptor == BodyType.AVERAGE and self.body_shapes and any(bs in self.body_shapes for bs in body_tags.CURVY_SHAPES):
             self.descriptor = BodyType.CURVY
 
     def set_breast_size(self):
