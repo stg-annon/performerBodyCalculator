@@ -223,7 +223,15 @@ class StashPerformer:
         if self.descriptor:
             descriptor = self.descriptor.name
         p_id = f"{self.name} ({self.id})"
-        return f"{p_id:>25} {self.bust:.0f}-{self.waist:.0f}-{self.hips:.0f} {self.bmi:5.2f} {descriptor:>7} {body_shapes:<17}"
+        p_str = f"{p_id:>25}"
+        if self.band and self.cupsize:
+            p_str += f" {self.band:.0f}{self.cupsize}"
+        elif self.bust:
+            p_str += f" {self.bust:.0f}"
+        if self.waist and self.hips:
+            p_str += f"-{self.waist:.0f}-{self.hips:.0f}"
+        p_str += f" {self.bmi:5.2f} {descriptor:>7} {body_shapes:<17}"
+        return p_str
     def __repr__(self) -> str:
         return str(self)
 
