@@ -145,8 +145,8 @@ class ButtSize(StashTagEnumComparable):
 def calculate_shape(performer):
 
     shapes = []
-    if performer.bust <= 0 and performer.waist <= 0 and performer.hips <= 0:
-        return
+    if not performer.bust or not performer.waist or not performer.hips:
+        return shapes
 
     bust_hips = performer.bust - performer.hips
     bust_waist = performer.bust - performer.waist

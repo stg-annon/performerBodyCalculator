@@ -92,10 +92,10 @@ class StashPerformer:
 
         self.__dict__.update(resp)
 
-        self.cupsize       = ""
-        self.band          = 0.0
-        self.waist         = 0.0
-        self.hips          = 0.0
+        self.cupsize       = None
+        self.band          = None
+        self.waist         = None
+        self.hips          = None
         self.bust          = None
         self.breast_volume = None
         
@@ -114,25 +114,34 @@ class StashPerformer:
          
     def parse_measurements(self):
         self.measurements = self.measurements.replace(" ", "")
-        m = re.match(r'^(?P<band>\d+)(?P<cupsize>[a-zA-Z]+)\-(?P<waist>\d+)\-(?P<hips>\d+)$', self.measurements)
-        if m:
-            m = m.groupdict()
+
+        # Full Measurements | Band, Cup Size, Waist, Hips | Example: "32D-28-34"
+        band_cup_waist_hips = re.match(r'^(?P<band>\d+)(?P<cupsize>[a-zA-Z]+)\-(?P<waist>\d+)\-(?P<hips>\d+)$', self.measurements)
+        if band_cup_waist_hips:
+            m = band_cup_waist_hips.groupdict()
         else:
-            raise DebugException(f"could not parse measurements: '{self.measurements}'")
+            # Fashion Measurements | Bust, Waist, Hips | Example: "36-28-34"
+            bust_waist_hips = re.match(r'^(?P<bust>\d+)\-(?P<waist>\d+)\-(?P<hips>\d+)$', self.measurements)
+            if bust_waist_hips:
+                m = bust_waist_hips.groupdict()
+            else:
+                # Bra Measurements | Band, Cup Size | Example: "32D" or "32D (81D)"
+                band_cup = re.match(r'^(?P<band>\d+)(?P<cupsize>[a-zA-Z]+)(?: ?\(\d+[a-zA-Z]+\))?$', self.measurements)
+                if band_cup:
+                    m = band_cup.groupdict()
+                else:
+                    raise WarningException(f"could not parse measurements: '{self.measurements}'")
 
-        if not m.get("band"):
-            raise DebugException(f"band size could not be parsed from measurements: '{self.measurements}'")
-        if not m.get("cupsize"):
-            raise DebugException(f"cupsize could not be parsed from measurements: '{self.measurements}'")
-        if not m.get("waist"):
-            raise DebugException(f"waist size could not be parsed from measurements: '{self.measurements}'")
-        if not m.get("hips"):
-            raise DebugException(f"hip size could not be parsed from measurements: '{self.measurements}'")
-
-        self.cupsize = m.get("cupsize", "").upper()
-        self.band    = float(m.get("band", 0))
-        self.waist   = float(m.get("waist",0))
-        self.hips    = float(m.get("hips", 0))
+        if m.get("cupsize"):
+            self.cupsize = m.get("cupsize", "").upper()
+        if m.get("band"):
+            self.band    = float(m.get("band", 0))
+        if m.get("bust"):
+            self.bust    = float(m.get("bust", 0))
+        if m.get("waist"):
+            self.waist   = float(m.get("waist",0))
+        if m.get("hips"):
+            self.hips    = float(m.get("hips", 0))
 
         if self.weight:
             self.weight = float(self.weight)
@@ -140,19 +149,25 @@ class StashPerformer:
             self.height = float(self.height)
 
         # convert metric to imperial
-        if self.band > 50 and self.waist > 50 and self.hips > 50:
+        if self.band and self.band > 50 and self.waist and self.waist > 50 and self.hips and self.hips > 50:
             self.band  = self.band / CM_TO_INCH
             self.waist = self.waist / CM_TO_INCH
             self.hips  = self.hips / CM_TO_INCH
             log.debug(f"converted measurements from metric {self.measurements} -> {self.band}{self.cupsize}-{self.waist}-{self.hips}")
+        elif self.bust and self.bust > 50 and self.waist and self.waist > 50 and self.hips and self.hips > 50:
+            self.bust  = self.bust / CM_TO_INCH
+            self.waist = self.waist / CM_TO_INCH
+            self.hips  = self.hips / CM_TO_INCH
+            log.debug(f"converted measurements from metric {self.measurements} -> {self.bust}-{self.waist}-{self.hips}")
 
-        for bust_diff, cup_list in enumerate(body_tags.BUST_DIFF_IDX):
-            if self.cupsize in cup_list:
-                self.bust = self.band + bust_diff
-                self.breast_volume = (self.band / 2.0) + bust_diff
-                log.debug(f"Bra size {int(self.band)}{self.cupsize} converted to {(self.band / 2.0)} + {bust_diff} = {self.breast_volume} volume points")
-        if not self.breast_volume:
-            raise Exception(f"could not identify cupsize '{self.cupsize}' add to 'BUST_DIFF_IDX' list")
+        if self.band and self.cupsize:
+            for bust_diff, cup_list in enumerate(body_tags.BUST_DIFF_IDX):
+                if self.cupsize in cup_list:
+                    self.bust = self.band + bust_diff
+                    self.breast_volume = (self.band / 2.0) + bust_diff
+                    log.debug(f"Bra size {int(self.band)}{self.cupsize} converted to {(self.band / 2.0)} + {bust_diff} = {self.breast_volume} volume points")
+            if not self.breast_volume:
+                raise Exception(f"could not identify cupsize '{self.cupsize}' add to 'BUST_DIFF_IDX' list")
 
     def calculate_bmi(self):
         if not self.weight or not self.height:
@@ -163,7 +178,10 @@ class StashPerformer:
         self.body_shapes = body_tags.calculate_shape(self)
         if not self.body_shapes:
             p_id = f"{self.name} ({self.id})"
-            log.warning(f"{p_id:>30}: could not classify bodyshape bust={self.bust:.0f} waist={self.waist:.0f} hips={self.hips:.0f}")
+            if not self.bust or not self.waist or not self.hips:
+                log.warning(f"{p_id:>30}: could not classify bodyshape, missing required measurements")
+            else:
+                log.warning(f"{p_id:>30}: could not classify bodyshape bust={self.bust:.0f} waist={self.waist:.0f} hips={self.hips:.0f}")
 
     def set_type_descriptor(self):
         self.descriptor = None
