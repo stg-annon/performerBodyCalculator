@@ -14,6 +14,14 @@ from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize
 TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize]
 CM_TO_INCH = 2.54
 
+PERFORMER_FRAGMENT = """
+id
+name 
+measurements
+weight
+height_cm
+"""
+
 def main(stash_in=None, mode_in=None):
     global stash
 
@@ -45,7 +53,7 @@ def run_calculator():
         enumtag_stash_init(enum_class, all_tag_ids, tag_updates)
 
     # get performers with measurements
-    performers = stash.find_performers(fragment="id name measurements weight height")
+    performers = stash.find_performers(fragment=PERFORMER_FRAGMENT)
     
     log.info("Removing existing plugin tags...")
     stash.update_performers({
@@ -87,12 +95,13 @@ class StashPerformer:
 
         self.__dict__.update(resp)
 
-        self.cupsize       = None
-        self.band          = None
-        self.waist         = None
-        self.hips          = None
-        self.bust          = None
-        self.breast_volume = None
+        self.cupsize        = None
+        self.band           = None
+        self.waist          = None
+        self.hips           = None
+        self.bust           = None
+        self.bust_band_diff = None
+        self.breast_volume  = None
         
         self.bmi = 0
         self.body_shapes = []
@@ -110,8 +119,8 @@ class StashPerformer:
     def parse_measurements(self):
         if self.weight:
             self.weight = float(self.weight)
-        if self.height:
-            self.height = float(self.height)
+        if self.height_cm:
+            self.height_cm = float(self.height_cm)
 
         self.measurements = self.measurements.replace(" ", "")
 
@@ -160,18 +169,16 @@ class StashPerformer:
             log.debug(f"converted measurements from metric {self.measurements} -> {self.bust}-{self.waist}-{self.hips}")
 
         if self.band and self.cupsize:
-            for bust_diff, cup_list in enumerate(body_tags.BUST_DIFF_IDX):
-                if self.cupsize in cup_list:
-                    self.bust = self.band + bust_diff
-                    self.breast_volume = (self.band / 2.0) + bust_diff
-                    log.debug(f"Bra size {int(self.band)}{self.cupsize} converted to {(self.band / 2.0)} + {bust_diff} = {self.breast_volume} volume points")
-            if not self.breast_volume:
-                raise Exception(f"could not identify cupsize '{self.cupsize}' add to 'BUST_DIFF_IDX' list")
+            self.bust_band_diff = body_tags.get_bust_band_difference(self.cupsize)
+            self.bust = self.band + self.bust_band_diff
+            self.breast_volume = (self.band / 2.0) + self.bust_band_diff
+            log.debug(f"Bra size {int(self.band)}{self.cupsize} converted to {(self.band / 2.0)} + {self.bust_band_diff} = {self.breast_volume} volume points")
 
     def calculate_bmi(self):
-        if not self.weight or not self.height:
+        if not self.weight or not self.height_cm:
             return
-        self.bmi = (self.weight / (self.height*self.height)) * 10000
+        breast_weight = body_tags.approximate_breast_weight(self.bust_band_diff)
+        self.bmi = (self.weight-breast_weight) / (self.height_cm/100) ** 2
 
     def match_body_shapes(self):
         self.body_shapes = body_tags.calculate_shape(self)
@@ -188,15 +195,14 @@ class StashPerformer:
             return
         self.descriptor = BodyType.match_threshold(self.bmi)
         
-        if self.descriptor == BodyType.FIT and HeightType.SHORT.within_threshold(self.height):
+        if self.descriptor == BodyType.FIT and HeightType.SHORT.within_threshold(self.height_cm):
             self.descriptor = BodyType.PETITE
         if self.descriptor == BodyType.AVERAGE and self.body_shapes and any(bs in self.body_shapes for bs in body_tags.CURVY_SHAPES):
             self.descriptor = BodyType.CURVY
 
     def set_breast_size(self):
-        self.bust_band_diff = None
         self.breast_size = None
-        if not self.cupsize or not self.breast_volume:
+        if not self.breast_volume:
             return
         self.breast_size = BreastSize.match_threshold(self.breast_volume)
 
@@ -229,7 +235,7 @@ class StashPerformer:
             p_str += f" {self.bust:.0f}"
         if self.waist and self.hips:
             p_str += f"-{self.waist:.0f}-{self.hips:.0f}"
-        p_str += f" {self.bmi:5.2f} {descriptor:>7} {body_shapes:<17}"
+        p_str += f" {self.bmi:5.2f}bmi {descriptor:>7} {body_shapes:<17}"
         return p_str
     def __repr__(self) -> str:
         return str(self)

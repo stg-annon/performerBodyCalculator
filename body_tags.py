@@ -116,7 +116,7 @@ class BodyType(StashTagEnumComparable):
     BBW     = StashTagDC("BBW Body",    threshold=(operator.lt, 55))
     SSBBW   = StashTagDC("SSBBW Body",  threshold=(operator.ge, 55))
 
-# threshold based off of performer.height
+# threshold based off of performer.height_cm
 class HeightType(StashTagEnumComparable):
     SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
     TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
@@ -214,3 +214,17 @@ BUST_DIFF_IDX = [
     ['Q'],
     ['R','LL'],
 ]
+def get_bust_band_difference(cupsize):
+    for difference, cup_list in enumerate(BUST_DIFF_IDX):
+        if cupsize in cup_list:
+            return difference    
+    raise Exception(f"could not identify cupsize '{cupsize}' add to 'BUST_DIFF_IDX' list")
+
+# Approximates breasts weight in kg, derived from this chart https://i.imgur.com/QZBhze8.png
+def approximate_breast_weight(bust_band_diff):
+    if not bust_band_diff:
+        return 0
+    bust_band_diff -= 1 
+    # 3 Degree Polynomial Trendline
+    weight_lb = 0.765 + 0.415 * bust_band_diff + -0.0168 * bust_band_diff ** 2 + 0.00247 * bust_band_diff ** 3
+    return weight_lb * 0.453
