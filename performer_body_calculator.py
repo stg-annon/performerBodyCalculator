@@ -9,10 +9,10 @@ except ModuleNotFoundError:
     sys.exit()
 
 import body_tags
-from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup
+from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup, HipSize
 
 #TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup]
-TAG_CLASSES = [BreastCup]
+TAG_CLASSES = [BreastCup, HipSize]
 CM_TO_INCH = 2.54
 
 PERFORMER_FRAGMENT = """
@@ -105,6 +105,7 @@ class StashPerformer:
         self.breast_volume  = None
 
         self.breastcup      = None #enum
+        self.hipsize        = None #enum
         
         self.bmi = 0
         self.body_shapes = []
@@ -115,6 +116,8 @@ class StashPerformer:
 
         self.set_breast_size()
         self.set_breast_cup()
+
+        self.set_hip_size()
 
 #        self.set_butt_size()
 
@@ -216,6 +219,9 @@ class StashPerformer:
         self.breastcup = body_tags.calculate_cup(self)
         log.debug(f"self.breastcup={self.breastcup}")
 
+    def set_hip_size(self):
+        self.hip_size = body_tags.calculate_hip_size(self)
+
     def set_butt_size(self):
         self.butt_size = None
         if not self.hips:
@@ -234,6 +240,9 @@ class StashPerformer:
         if self.breastcup:
             log.debug(f"self.breastcup={self.breastcup}")
             tag_updates[self.breastcup].append(self.id)
+        if self.hip_size:
+            log.debug(f"self.hip_size={self.hip_size}")
+            tag_updates[self.hip_size].append(self.id)
 
     def __str__(self) -> str:
         body_shapes = ",".join([s.name for s in self.body_shapes])
