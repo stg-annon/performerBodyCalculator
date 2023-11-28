@@ -60,11 +60,13 @@ class StashTagEnumComparable(StashTagEnum):
 
 # body mass index determined from calculate_bmi()
 class BodyMassIndex(StashTagEnum):
+    SEVERELY_UNDERWEIGHT = StashTagDC("BMI: Severely Underweight",image='',description='')
     UNDERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
     HEALTHY = StashTagDC("BMI: Healthy",image='',description='')
     OVERWEIGHT = StashTagDC("BMI: Overweight",image='',description='')
-    OBESE = StashTagDC("BMI: Obese",image='',description='')
-    EXTREMELY_OBESE = StashTagDC("BMI: Extremely Obese",image='',description='')
+    OBESE_CLASS_1 = StashTagDC("BMI: Obese Class 1",image='',description='')
+    OBESE_CLASS_2 = StashTagDC("BMI: Obese Class 2",image='',description='')
+    SEVERELY_OBESE = StashTagDC("BMI: Extremely Obese",image='',description='')
 
 class HipSize(StashTagEnum):
     WIDE = StashTagDC("Hips: Wide")
@@ -236,20 +238,42 @@ def calculate_cup(performer):
         return BreastCup.Q
     if performer.cupsize == 'R' or performer.cupsize == 'LL':
         return BreastCup.R
-          
+         
+# https://www.ncbi.nlm.nih.gov/books/NBK541070/
 def calculate_bmi(performer):
     if performer.bmi < 1:
         return None
-    elif performer.bmi < 18:
-        return BodyMassIndex.UNDERWEIGHT
-    elif performer.bmi < 23:
-        return BodyMassIndex.HEALTHY
-    elif performer.bmi < 29:
-        return BodyMassIndex.OVERWEIGHT
-    elif performer.bmi < 55:
-        return BodyMassIndex.OBESE
+    elif performer.ethnicity.title() == 'Asian':
+        if performer.bmi < 16.5:
+            return BodyMassIndex.SEVERELY_UNDERWEIGHT
+        elif performer.bmi < 18.5:
+            return BodyMassIndex.UNDERWEIGHT
+        elif performer.bmi < 23:
+            return BodyMassIndex.HEALTHY
+        elif performer.bmi < 25:
+            return BodyMassIndex.OVERWEIGHT
+        elif performer.bmi < 30:
+            return BodyMassIndex.OBESE_CLASS_1
+        elif performer.bmi < 35:
+            return BodyMassIndex.OBESE_CLASS_2
+        else:
+            return BodyMassIndex.SEVERELY_OBESE
     else:
-        return BodyMassIndex.EXTREMELY_OBESE
+        if performer.bmi < 16.5:
+            return BodyMassIndex.SEVERELY_UNDERWEIGHT
+        elif performer.bmi < 18.5:
+            return BodyMassIndex.UNDERWEIGHT
+        elif performer.bmi < 25:
+            return BodyMassIndex.HEALTHY
+        elif performer.bmi < 30:
+            return BodyMassIndex.OVERWEIGHT
+        elif performer.bmi < 35:
+            return BodyMassIndex.OBESE_CLASS_1
+        elif performer.bmi < 40:
+            return BodyMassIndex.OBESE_CLASS_2
+        else:
+            return BodyMassIndex.SEVERELY_OBESE
+
 
 # Shape Calculation References:
 #  https://en.wikipedia.org/wiki/Female_body_shape#FFIT_for_Apparel_measurements

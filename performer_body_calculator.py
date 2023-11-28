@@ -21,6 +21,8 @@ name
 measurements
 weight
 height_cm
+ethnicity
+gender
 """
 
 def main(stash_in=None, mode_in=None):
@@ -67,6 +69,9 @@ def run_calculator():
 
     log.info("Parsing Performers...")
     for p in performers:
+        if p.gender != 'FEMALE':
+            continue
+
         p_id = f"{p['name']} ({p['id']})"
         try:
             p = StashPerformer(p)
@@ -93,6 +98,7 @@ def run_calculator():
 class StashPerformer:
 
     def __init__(self, resp) -> None:
+        log.debug(f"resp={resp}")
 
         self.__dict__.update(resp)
 
@@ -100,14 +106,15 @@ class StashPerformer:
         self.band           = None
         self.waist          = None
         self.hips           = None
+
         self.bust           = None
         self.bust_band_diff = None
         self.breast_volume  = None
-
         self.breastcup      = None #enum
+
         self.hipsize        = None #enum
+
         self.bmitag         = None #enum
-        
         self.bmi = 0
         self.body_shapes = []
         self.descriptor = None
@@ -120,7 +127,6 @@ class StashPerformer:
         self.set_breast_cup()
 
         self.set_hip_size()
-
 
         self.set_butt_size()
 
