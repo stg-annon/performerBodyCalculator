@@ -175,9 +175,9 @@ class ButtSize(StashTagEnumComparable):
     MASSIVE = StashTagDC("Massive Ass",threshold=(operator.ge, 48))
 
 def calculate_bmi(performer):
-    if not performer.height or not performer.weight:
+    if not performer.height_cm or not performer.weight:
         return []
-    bmi = int(math.floor(performer.weight / performer.height ** 2))
+    bmi = int(math.floor(performer.weight / performer.height_cm ** 2))
     if bmi == 0:
         return []
     elif bmi in range(1, 18):
