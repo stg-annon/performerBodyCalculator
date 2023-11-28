@@ -153,6 +153,7 @@ class HeightType(StashTagEnumComparable):
     F_HEIGHT_MEAN = 164.7
     F_HEIGHT_SD = 7.07
     SHORT   = StashTagDC("Short",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    MEDIUM  = StashTagDC("Medium",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
     TALL    = StashTagDC("Tall",   threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))
 
 # threshold based off of performer.breast_volume
