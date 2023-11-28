@@ -56,7 +56,35 @@ class StashTagEnumComparable(StashTagEnum):
         for enum in cls:
             if enum.within_threshold(compare_value):
                 return enum
-    
+
+# body mass index determined from calculate_bmi()
+class BodyMassIndex(StashTagEnum):
+    UNDERWEIGHT = StashTagDC(
+        "BMI: Underweight",
+        image='',
+        description=''
+    )
+    HEALTHY = StashTagDC(
+        "BMI: Underweight",
+        image='',
+        description=''
+    )
+    OVERWEIGHT = StashTagDC(
+        "BMI: Underweight",
+        image='',
+        description=''
+    )
+    OBESE = StashTagDC(
+        "BMI: Underweight",
+        image='',
+        description=''
+    )
+    EXTREMELY_OBESE = StashTagDC(
+        "BMI: Underweight",
+        image='',
+        description=''
+    )
+
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
     HOURGLASS = StashTagDC(
@@ -117,9 +145,15 @@ class BodyType(StashTagEnumComparable):
     SSBBW   = StashTagDC("SSBBW Body",  threshold=(operator.ge, 55))
 
 # threshold based off of performer.height_cm
+# https://ourworldindata.org/human-height
+# current implementation uses global average
+# TODO - can further segment by country/continent factor, see:
+# https://www.worlddata.info/average-bodyheight.php
 class HeightType(StashTagEnumComparable):
-    SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
-    TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
+    F_HEIGHT_MEAN = 164.7
+    F_HEIGHT_SD = 7.07
+    SHORT   = StashTagDC("Short",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    TALL    = StashTagDC("Tall",   threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))
 
 # threshold based off of performer.breast_volume
 class BreastSize(StashTagEnumComparable):
@@ -138,6 +172,23 @@ class ButtSize(StashTagEnumComparable):
     LARGE   = StashTagDC("Large Ass",  threshold=(operator.lt, 44))
     HUGE    = StashTagDC("Huge Ass",   threshold=(operator.lt, 48))
     MASSIVE = StashTagDC("Massive Ass",threshold=(operator.ge, 48))
+
+def calculate_bmi(performer):
+    if not performer.height or not performer.weight:
+        return []
+    bmi = int(math.floor(performer.weight / performer.height ** 2))
+    if bmi == 0:
+        return []
+    elif bmi in range(1, 18):
+        return [BodyMassIndex.UNDERWEIGHT]
+    elif bmi in range(18, 23):
+        return [BodyMassIndex.HEALTHY]
+    elif bmi in range(23, 29):
+        return [BodyMassIndex.OVERWEIGHT]
+    elif bmi in range(29, 55):
+        return [BodyMassIndex.OBESE]
+    elif bmi >= 55:
+        return [BodyMassIndex.EXTREMELY_OBESE]
 
 # Shape Calculation References:
 #  https://en.wikipedia.org/wiki/Female_body_shape#FFIT_for_Apparel_measurements
