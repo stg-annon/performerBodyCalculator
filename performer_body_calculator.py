@@ -9,10 +9,11 @@ except ModuleNotFoundError:
     sys.exit()
 
 import body_tags
-from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup, HipSize
+from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BreastCup, HipSize, BodyMassIndex
 
-TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup, HipSize]
+TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BreastCup, HipSize, BodyMassIndex]
 CM_TO_INCH = 2.54
+
 
 PERFORMER_FRAGMENT = """
 id
@@ -105,6 +106,7 @@ class StashPerformer:
 
         self.breastcup      = None #enum
         self.hipsize        = None #enum
+        self.bmitag         = None #enum
         
         self.bmi = 0
         self.body_shapes = []
@@ -112,11 +114,13 @@ class StashPerformer:
 
         self.parse_measurements()
         self.calculate_bmi()
+        self.set_bmitag()
 
         self.set_breast_size()
         self.set_breast_cup()
 
         self.set_hip_size()
+
 
         self.set_butt_size()
 
@@ -227,6 +231,14 @@ class StashPerformer:
             return
         self.butt_size = ButtSize.match_threshold(self.hips)
 
+    def set_bmitag(self):
+        log.debug(f"height_cm={self.height_cm}")
+        log.debug(f"weight={self.weight}")
+        log.debug(f"bmi={self.bmi}")
+        bmitag = body_tags.calculate_bmi(self)
+        log.debug(f"bmitag={bmitag}")
+        self.bmitag = bmitag
+
     def get_tag_updates(self, tag_updates={}):
         for body_shape in self.body_shapes:
             tag_updates[body_shape].append(self.id)
@@ -242,6 +254,9 @@ class StashPerformer:
         if self.hip_size:
             log.debug(f"self.hip_size={self.hip_size}")
             tag_updates[self.hip_size].append(self.id)
+        if self.bmitag:
+            log.debug(f"self.bmitag={self.bmitag}")
+            tag_updates[self.bmitag].append(self.id)
 
     def __str__(self) -> str:
         body_shapes = ",".join([s.name for s in self.body_shapes])

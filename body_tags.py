@@ -1,3 +1,4 @@
+import math
 import operator
 from enum import Enum
 
@@ -60,10 +61,10 @@ class StashTagEnumComparable(StashTagEnum):
 # body mass index determined from calculate_bmi()
 class BodyMassIndex(StashTagEnum):
     UNDERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
-    HEALTHY = StashTagDC("BMI: Underweight",image='',description='')
-    OVERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
-    OBESE = StashTagDC("BMI: Underweight",image='',description='')
-    EXTREMELY_OBESE = StashTagDC("BMI: Underweight",image='',description='')
+    HEALTHY = StashTagDC("BMI: Healthy",image='',description='')
+    OVERWEIGHT = StashTagDC("BMI: Overweight",image='',description='')
+    OBESE = StashTagDC("BMI: Obese",image='',description='')
+    EXTREMELY_OBESE = StashTagDC("BMI: Extremely Obese",image='',description='')
 
 class HipSize(StashTagEnum):
     WIDE = StashTagDC("Hips: Wide")
@@ -237,21 +238,18 @@ def calculate_cup(performer):
         return BreastCup.R
           
 def calculate_bmi(performer):
-    if not performer.height_cm or not performer.weight:
-        return []
-    bmi = int(math.floor(performer.weight / performer.height_cm ** 2))
-    if bmi == 0:
-        return []
-    elif bmi in range(1, 18):
-        return [BodyMassIndex.UNDERWEIGHT]
-    elif bmi in range(18, 23):
-        return [BodyMassIndex.HEALTHY]
-    elif bmi in range(23, 29):
-        return [BodyMassIndex.OVERWEIGHT]
-    elif bmi in range(29, 55):
-        return [BodyMassIndex.OBESE]
-    elif bmi >= 55:
-        return [BodyMassIndex.EXTREMELY_OBESE]
+    if performer.bmi < 1:
+        return None
+    elif performer.bmi < 18:
+        return BodyMassIndex.UNDERWEIGHT
+    elif performer.bmi < 23:
+        return BodyMassIndex.HEALTHY
+    elif performer.bmi < 29:
+        return BodyMassIndex.OVERWEIGHT
+    elif performer.bmi < 55:
+        return BodyMassIndex.OBESE
+    else:
+        return BodyMassIndex.EXTREMELY_OBESE
 
 # Shape Calculation References:
 #  https://en.wikipedia.org/wiki/Female_body_shape#FFIT_for_Apparel_measurements
