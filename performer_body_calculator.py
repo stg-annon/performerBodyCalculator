@@ -9,9 +9,9 @@ except ModuleNotFoundError:
     sys.exit()
 
 import body_tags
-from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize
+from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup
 
-TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize]
+TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BodyMassIndex, BreastCup]
 CM_TO_INCH = 2.54
 
 PERFORMER_FRAGMENT = """
