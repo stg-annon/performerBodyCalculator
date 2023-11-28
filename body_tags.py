@@ -179,43 +179,43 @@ def calculate_cup(performer):
     if not performer.cupsize:
         return None
         
-    if self.cupsize == 'AA':
+    if performer.cupsize == 'AA':
         return BreastCup.AA
-    if self.cupsize == 'A':
+    if performer.cupsize == 'A':
         return BreastCup.A
-    if self.cupsize == 'B':
+    if performer.cupsize == 'B':
         return BreastCup.B
-    if self.cupsize == 'C':
+    if performer.cupsize == 'C':
         return BreastCup.C
-    if self.cupsize == 'D':
+    if performer.cupsize == 'D':
         return BreastCup.D
-    if self.cupsize == 'E' or self.cupsize == 'DD':
+    if performer.cupsize == 'E' or performer.cupsize == 'DD':
         return BreastCup.E
-    if self.cupsize == 'F' or self.cupsize == 'DDD' or self.cupsize == 'EE':
+    if performer.cupsize == 'F' or performer.cupsize == 'DDD' or performer.cupsize == 'EE':
         return BreastCup.F
-    if self.cupsize == 'G' or self.cupsize == 'DDDD':
+    if performer.cupsize == 'G' or performer.cupsize == 'DDDD':
         return BreastCup.G
-    if self.cupsize == 'H' or self.cupsize == 'FF':
+    if performer.cupsize == 'H' or performer.cupsize == 'FF':
         return BreastCup.H
-    if self.cupsize == 'I':
+    if performer.cupsize == 'I':
         return BreastCup.I
-    if self.cupsize == 'J' or self.cupsize == 'GG':
+    if performer.cupsize == 'J' or performer.cupsize == 'GG':
         return BreastCup.J
-    if self.cupsize == 'K':
+    if performer.cupsize == 'K':
         return BreastCup.K
-    if self.cupsize == 'L' or self.cupsize == 'HH':
+    if performer.cupsize == 'L' or performer.cupsize == 'HH':
         return BreastCup.L
-    if self.cupsize == 'M':
+    if performer.cupsize == 'M':
         return BreastCup.M
-    if self.cupsize == 'N' or self.cupsize == 'JJ':
+    if performer.cupsize == 'N' or performer.cupsize == 'JJ':
         return BreastCup.N
-    if self.cupsize == 'O':
+    if performer.cupsize == 'O':
         return BreastCup.O
-    if self.cupsize == 'P' or self.cupsize == 'KK':
+    if performer.cupsize == 'P' or performer.cupsize == 'KK':
         return BreastCup.P
-    if self.cupsize == 'Q':
+    if performer.cupsize == 'Q':
         return BreastCup.Q
-    if self.cupsize == 'R' or self.cupsize == 'LL':
+    if performer.cupsize == 'R' or performer.cupsize == 'LL':
         return BreastCup.R
           
 def calculate_bmi(performer):
