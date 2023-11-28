@@ -59,31 +59,32 @@ class StashTagEnumComparable(StashTagEnum):
 
 # body mass index determined from calculate_bmi()
 class BodyMassIndex(StashTagEnum):
-    UNDERWEIGHT = StashTagDC(
-        "BMI: Underweight",
-        image='',
-        description=''
-    )
-    HEALTHY = StashTagDC(
-        "BMI: Underweight",
-        image='',
-        description=''
-    )
-    OVERWEIGHT = StashTagDC(
-        "BMI: Underweight",
-        image='',
-        description=''
-    )
-    OBESE = StashTagDC(
-        "BMI: Underweight",
-        image='',
-        description=''
-    )
-    EXTREMELY_OBESE = StashTagDC(
-        "BMI: Underweight",
-        image='',
-        description=''
-    )
+    UNDERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
+    HEALTHY = StashTagDC("BMI: Underweight",image='',description='')
+    OVERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
+    OBESE = StashTagDC("BMI: Underweight",image='',description='')
+    EXTREMELY_OBESE = StashTagDC("BMI: Underweight",image='',description='')
+
+class BreastCup(StashTagEnum):
+    AA = StashTagDC("Cup: AA")
+    A = StashTagDC("Cup: A")
+    B = StashTagDC("Cup: B")
+    C = StashTagDC("Cup: C")
+    D = StashTagDC("Cup: D")
+    E = StashTagDC("Cup: E")
+    F = StashTagDC("Cup: F")
+    G = StashTagDC("Cup: G")
+    H = StashTagDC("Cup: H")
+    I = StashTagDC("Cup: I")
+    J = StashTagDC("Cup: J")
+    K = StashTagDC("Cup: K")
+    L = StashTagDC("Cup: L")
+    M = StashTagDC("Cup: M")
+    N = StashTagDC("Cup: N")
+    O = StashTagDC("Cup: O")
+    P = StashTagDC("Cup: P")
+    Q = StashTagDC("Cup: Q")
+    R = StashTagDC("Cup: R")
 
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
@@ -174,6 +175,49 @@ class ButtSize(StashTagEnumComparable):
     HUGE    = StashTagDC("Huge Ass",   threshold=(operator.lt, 48))
     MASSIVE = StashTagDC("Massive Ass",threshold=(operator.ge, 48))
 
+def calculate_cup(performer):
+    if not performer.cupsize:
+        return None
+        
+    if self.cupsize == 'AA':
+        return BreastCup.AA
+    if self.cupsize == 'A':
+        return BreastCup.A
+    if self.cupsize == 'B':
+        return BreastCup.B
+    if self.cupsize == 'C':
+        return BreastCup.C
+    if self.cupsize == 'D':
+        return BreastCup.D
+    if self.cupsize == 'E' or self.cupsize == 'DD':
+        return BreastCup.E
+    if self.cupsize == 'F' or self.cupsize == 'DDD' or self.cupsize == 'EE':
+        return BreastCup.F
+    if self.cupsize == 'G' or self.cupsize == 'DDDD':
+        return BreastCup.G
+    if self.cupsize == 'H' or self.cupsize == 'FF':
+        return BreastCup.H
+    if self.cupsize == 'I':
+        return BreastCup.I
+    if self.cupsize == 'J' or self.cupsize == 'GG':
+        return BreastCup.J
+    if self.cupsize == 'K':
+        return BreastCup.K
+    if self.cupsize == 'L' or self.cupsize == 'HH':
+        return BreastCup.L
+    if self.cupsize == 'M':
+        return BreastCup.M
+    if self.cupsize == 'N' or self.cupsize == 'JJ':
+        return BreastCup.N
+    if self.cupsize == 'O':
+        return BreastCup.O
+    if self.cupsize == 'P' or self.cupsize == 'KK':
+        return BreastCup.P
+    if self.cupsize == 'Q':
+        return BreastCup.Q
+    if self.cupsize == 'R' or self.cupsize == 'LL':
+        return BreastCup.R
+          
 def calculate_bmi(performer):
     if not performer.height_cm or not performer.weight:
         return []
