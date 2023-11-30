@@ -158,6 +158,10 @@ class BodyType(StashTagEnumComparable):
 # current implementation uses global average
 # TODO - can further segment by country/continent factor, see:
 # https://www.worlddata.info/average-bodyheight.php
+# height means by ethnicity (US)
+# https://thebonescience.com/blogs/journal/average-height-around-the-world
+# height standard deviation (global)
+# https://www.nber.org/system/files/working_papers/h0108/h0108.pdf
 class HeightType(StashTagEnumComparable):
     F_HEIGHT_MEAN = 164.7
     F_HEIGHT_SD = 7.07
