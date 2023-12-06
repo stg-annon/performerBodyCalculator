@@ -119,6 +119,7 @@ class BodyType(StashTagEnumComparable):
 # threshold based off of performer.height_cm
 class HeightType(StashTagEnumComparable):
     SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
+    AVERAGE = StashTagDC("Average",threshold=None)
     TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
 
 # threshold based off of performer.breast_volume
