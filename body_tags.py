@@ -7,7 +7,7 @@ from dataclasses import dataclass
 @dataclass
 class StashTagDC:
     name: str
-    threshold: float | None = None
+    threshold: tuple | None = None
     description :str | None = ""
     aliases: list[str] | None = None
     image: str | None = None
@@ -50,6 +50,8 @@ class StashTagEnumComparable(StashTagEnum):
         if not self.value.threshold:
             return
         op, value = self.value.threshold
+        if op == operator.contains:
+            return op(value, compare_value)
         return op(compare_value, value)
 
     @classmethod
@@ -73,26 +75,26 @@ class HipSize(StashTagEnum):
     MEDIUM = StashTagDC("Hips: Medium")
     SLIM = StashTagDC("Hips: Slim")
 
-class BreastCup(StashTagEnum):
-    AA = StashTagDC("Cup: AA")
-    A = StashTagDC("Cup: A")
-    B = StashTagDC("Cup: B")
-    C = StashTagDC("Cup: C")
-    D = StashTagDC("Cup: D")
-    E = StashTagDC("Cup: E")
-    F = StashTagDC("Cup: F")
-    G = StashTagDC("Cup: G")
-    H = StashTagDC("Cup: H")
-    I = StashTagDC("Cup: I")
-    J = StashTagDC("Cup: J")
-    K = StashTagDC("Cup: K")
-    L = StashTagDC("Cup: L")
-    M = StashTagDC("Cup: M")
-    N = StashTagDC("Cup: N")
-    O = StashTagDC("Cup: O")
-    P = StashTagDC("Cup: P")
-    Q = StashTagDC("Cup: Q")
-    R = StashTagDC("Cup: R")
+class BreastCup(StashTagEnumComparable):
+    AA = StashTagDC("Cup: AA", threshold=(operator.contains, ['AA']))
+    A  = StashTagDC("Cup: A",  threshold=(operator.contains, ['A']))
+    B  = StashTagDC("Cup: B",  threshold=(operator.contains, ['B']))
+    C  = StashTagDC("Cup: C",  threshold=(operator.contains, ['C']))
+    D  = StashTagDC("Cup: D",  threshold=(operator.contains, ['D']))
+    E  = StashTagDC("Cup: E",  threshold=(operator.contains, ['E','DD']))
+    F  = StashTagDC("Cup: F",  threshold=(operator.contains, ['F','DDD','EE']))
+    G  = StashTagDC("Cup: G",  threshold=(operator.contains, ['G','DDDD']))
+    H  = StashTagDC("Cup: H",  threshold=(operator.contains, ['H','FF']))
+    I  = StashTagDC("Cup: I",  threshold=(operator.contains, ['I']))
+    J  = StashTagDC("Cup: J",  threshold=(operator.contains, ['J','GG']))
+    K  = StashTagDC("Cup: K",  threshold=(operator.contains, ['K']))
+    L  = StashTagDC("Cup: L",  threshold=(operator.contains, ['L','HH']))
+    M  = StashTagDC("Cup: M",  threshold=(operator.contains, ['M']))
+    N  = StashTagDC("Cup: N",  threshold=(operator.contains, ['N','JJ']))
+    O  = StashTagDC("Cup: O",  threshold=(operator.contains, ['O']))
+    P  = StashTagDC("Cup: P",  threshold=(operator.contains, ['P','KK']))
+    Q  = StashTagDC("Cup: Q",  threshold=(operator.contains, ['Q']))
+    R  = StashTagDC("Cup: R",  threshold=(operator.contains, ['R','LL']))
 
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
@@ -203,45 +205,7 @@ def calculate_hip_size(performer):
 def calculate_cup(performer):
     if not performer.cupsize:
         return None
-        
-    if performer.cupsize == 'AA':
-        return BreastCup.AA
-    if performer.cupsize == 'A':
-        return BreastCup.A
-    if performer.cupsize == 'B':
-        return BreastCup.B
-    if performer.cupsize == 'C':
-        return BreastCup.C
-    if performer.cupsize == 'D':
-        return BreastCup.D
-    if performer.cupsize == 'E' or performer.cupsize == 'DD':
-        return BreastCup.E
-    if performer.cupsize == 'F' or performer.cupsize == 'DDD' or performer.cupsize == 'EE':
-        return BreastCup.F
-    if performer.cupsize == 'G' or performer.cupsize == 'DDDD':
-        return BreastCup.G
-    if performer.cupsize == 'H' or performer.cupsize == 'FF':
-        return BreastCup.H
-    if performer.cupsize == 'I':
-        return BreastCup.I
-    if performer.cupsize == 'J' or performer.cupsize == 'GG':
-        return BreastCup.J
-    if performer.cupsize == 'K':
-        return BreastCup.K
-    if performer.cupsize == 'L' or performer.cupsize == 'HH':
-        return BreastCup.L
-    if performer.cupsize == 'M':
-        return BreastCup.M
-    if performer.cupsize == 'N' or performer.cupsize == 'JJ':
-        return BreastCup.N
-    if performer.cupsize == 'O':
-        return BreastCup.O
-    if performer.cupsize == 'P' or performer.cupsize == 'KK':
-        return BreastCup.P
-    if performer.cupsize == 'Q':
-        return BreastCup.Q
-    if performer.cupsize == 'R' or performer.cupsize == 'LL':
-        return BreastCup.R
+    return BreastCup.match_threshold(performer.cupsize)
          
 # https://www.ncbi.nlm.nih.gov/books/NBK541070/
 def calculate_bmi(performer):
@@ -333,32 +297,11 @@ def calculate_shape(performer):
 # SEE: https://en.wikipedia.org/wiki/Bra_size#The_meaning_of_cup_sizes_varies
 # "cup size approximates the difference between the Over-the-bust and band measurements in inches"
 # index == bust band difference in inches
-BUST_DIFF_IDX = [
-    ['AA'],
-    ['A'],
-    ['B'],
-    ['C'],
-    ['D'],
-    ['E','DD'],
-    ['F','DDD','EE'],
-    ['G','DDDD'],
-    ['H','FF'],
-    ['I'],
-    ['J','GG'],
-    ['K'],
-    ['L','HH'],
-    ['M'],
-    ['N','JJ'],
-    ['O'],
-    ['P','KK'],
-    ['Q'],
-    ['R','LL'],
-]
 def get_bust_band_difference(cupsize):
-    for difference, cup_list in enumerate(BUST_DIFF_IDX):
-        if cupsize in cup_list:
+    for difference, cup_enum in enumerate(BreastCup):
+        if cup_enum.within_threshold(cupsize):
             return difference    
-    raise Exception(f"could not identify cupsize '{cupsize}' add to 'BUST_DIFF_IDX' list")
+    raise Exception(f"could not identify cupsize '{cupsize}' add to 'BreastCup' enum")
 
 # Approximates breasts weight in kg, derived from this chart https://i.imgur.com/QZBhze8.png
 def approximate_breast_weight(bust_band_diff):
