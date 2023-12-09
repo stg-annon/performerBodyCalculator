@@ -6,7 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class StashTagDC:
     name: str
-    threshold: float | None = None
+    threshold: tuple | None = None
     description :str | None = ""
     aliases: list[str] | None = None
     image: str | None = None
@@ -49,6 +49,8 @@ class StashTagEnumComparable(StashTagEnum):
         if not self.value.threshold:
             return
         op, value = self.value.threshold
+        if op == operator.contains:
+            return op(value, compare_value)
         return op(compare_value, value)
 
     @classmethod
@@ -56,7 +58,43 @@ class StashTagEnumComparable(StashTagEnum):
         for enum in cls:
             if enum.within_threshold(compare_value):
                 return enum
-    
+
+# body mass index determined from calculate_bmi()
+class BodyMassIndex(StashTagEnum):
+    SEVERELY_UNDERWEIGHT = StashTagDC("BMI: Severely Underweight",image='',description='')
+    UNDERWEIGHT = StashTagDC("BMI: Underweight",image='',description='')
+    HEALTHY = StashTagDC("BMI: Healthy",image='',description='')
+    OVERWEIGHT = StashTagDC("BMI: Overweight",image='',description='')
+    OBESE_CLASS_1 = StashTagDC("BMI: Obese Class 1",image='',description='')
+    OBESE_CLASS_2 = StashTagDC("BMI: Obese Class 2",image='',description='')
+    SEVERELY_OBESE = StashTagDC("BMI: Extremely Obese",image='',description='')
+
+class HipSize(StashTagEnum):
+    WIDE = StashTagDC("Hips: Wide")
+    MEDIUM = StashTagDC("Hips: Medium")
+    SLIM = StashTagDC("Hips: Slim")
+
+class BreastCup(StashTagEnumComparable):
+    AA = StashTagDC("Cup: AA", threshold=(operator.contains, ['AA']))
+    A  = StashTagDC("Cup: A",  threshold=(operator.contains, ['A']))
+    B  = StashTagDC("Cup: B",  threshold=(operator.contains, ['B']))
+    C  = StashTagDC("Cup: C",  threshold=(operator.contains, ['C']))
+    D  = StashTagDC("Cup: D",  threshold=(operator.contains, ['D']))
+    E  = StashTagDC("Cup: E",  threshold=(operator.contains, ['E','DD']))
+    F  = StashTagDC("Cup: F",  threshold=(operator.contains, ['F','DDD','EE']))
+    G  = StashTagDC("Cup: G",  threshold=(operator.contains, ['G','DDDD']))
+    H  = StashTagDC("Cup: H",  threshold=(operator.contains, ['H','FF']))
+    I  = StashTagDC("Cup: I",  threshold=(operator.contains, ['I']))
+    J  = StashTagDC("Cup: J",  threshold=(operator.contains, ['J','GG']))
+    K  = StashTagDC("Cup: K",  threshold=(operator.contains, ['K']))
+    L  = StashTagDC("Cup: L",  threshold=(operator.contains, ['L','HH']))
+    M  = StashTagDC("Cup: M",  threshold=(operator.contains, ['M']))
+    N  = StashTagDC("Cup: N",  threshold=(operator.contains, ['N','JJ']))
+    O  = StashTagDC("Cup: O",  threshold=(operator.contains, ['O']))
+    P  = StashTagDC("Cup: P",  threshold=(operator.contains, ['P','KK']))
+    Q  = StashTagDC("Cup: Q",  threshold=(operator.contains, ['Q']))
+    R  = StashTagDC("Cup: R",  threshold=(operator.contains, ['R','LL']))
+
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
     HOURGLASS = StashTagDC(
@@ -117,10 +155,20 @@ class BodyType(StashTagEnumComparable):
     SSBBW   = StashTagDC("SSBBW Body",  threshold=(operator.ge, 55))
 
 # threshold based off of performer.height_cm
+# https://ourworldindata.org/human-height
+# current implementation uses global average
+# TODO - can further segment by country/continent factor, see:
+# https://www.worlddata.info/average-bodyheight.php
+# height means by ethnicity (US)
+# https://thebonescience.com/blogs/journal/average-height-around-the-world
+# height standard deviation (global)
+# https://www.nber.org/system/files/working_papers/h0108/h0108.pdf
+F_HEIGHT_MEAN = 164.7
+F_HEIGHT_SD = 7.07
 class HeightType(StashTagEnumComparable):
-    SHORT   = StashTagDC("Short",  threshold=(operator.le, 160))
-    AVERAGE = StashTagDC("Average",threshold=None)
-    TALL    = StashTagDC("Tall",   threshold=(operator.ge, 180))
+    SHORT   = StashTagDC("Short",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    MEDIUM  = StashTagDC("Medium",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    TALL    = StashTagDC("Tall",   threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))
 
 # threshold based off of performer.breast_volume
 class BreastSize(StashTagEnumComparable):
@@ -139,6 +187,60 @@ class ButtSize(StashTagEnumComparable):
     LARGE   = StashTagDC("Large Ass",  threshold=(operator.lt, 44))
     HUGE    = StashTagDC("Huge Ass",   threshold=(operator.lt, 48))
     MASSIVE = StashTagDC("Massive Ass",threshold=(operator.ge, 48))
+
+def calculate_hip_size(performer):
+    if not performer.waist or not performer.hips:
+        return None
+
+    whr = performer.waist / performer.hips
+
+    if whr > 0.8:
+        return HipSize.WIDE
+    elif whr > 0.64:
+        return HipSize.MEDIUM
+    else:
+        return HipSize.SLIM
+
+def calculate_cup(performer):
+    if not performer.cupsize:
+        return None
+    return BreastCup.match_threshold(performer.cupsize)
+         
+# https://www.ncbi.nlm.nih.gov/books/NBK541070/
+def calculate_bmi(performer):
+    if performer.bmi < 1:
+        return None
+    elif performer.ethnicity.title() == 'Asian':
+        if performer.bmi < 16.5:
+            return BodyMassIndex.SEVERELY_UNDERWEIGHT
+        elif performer.bmi < 18.5:
+            return BodyMassIndex.UNDERWEIGHT
+        elif performer.bmi < 23:
+            return BodyMassIndex.HEALTHY
+        elif performer.bmi < 25:
+            return BodyMassIndex.OVERWEIGHT
+        elif performer.bmi < 30:
+            return BodyMassIndex.OBESE_CLASS_1
+        elif performer.bmi < 35:
+            return BodyMassIndex.OBESE_CLASS_2
+        else:
+            return BodyMassIndex.SEVERELY_OBESE
+    else:
+        if performer.bmi < 16.5:
+            return BodyMassIndex.SEVERELY_UNDERWEIGHT
+        elif performer.bmi < 18.5:
+            return BodyMassIndex.UNDERWEIGHT
+        elif performer.bmi < 25:
+            return BodyMassIndex.HEALTHY
+        elif performer.bmi < 30:
+            return BodyMassIndex.OVERWEIGHT
+        elif performer.bmi < 35:
+            return BodyMassIndex.OBESE_CLASS_1
+        elif performer.bmi < 40:
+            return BodyMassIndex.OBESE_CLASS_2
+        else:
+            return BodyMassIndex.SEVERELY_OBESE
+
 
 # Shape Calculation References:
 #  https://en.wikipedia.org/wiki/Female_body_shape#FFIT_for_Apparel_measurements
@@ -194,32 +296,11 @@ def calculate_shape(performer):
 # SEE: https://en.wikipedia.org/wiki/Bra_size#The_meaning_of_cup_sizes_varies
 # "cup size approximates the difference between the Over-the-bust and band measurements in inches"
 # index == bust band difference in inches
-BUST_DIFF_IDX = [
-    ['AA'],
-    ['A'],
-    ['B'],
-    ['C'],
-    ['D'],
-    ['E','DD'],
-    ['F','DDD','EE'],
-    ['G','DDDD'],
-    ['H','FF'],
-    ['I'],
-    ['J','GG'],
-    ['K'],
-    ['L','HH'],
-    ['M'],
-    ['N','JJ'],
-    ['O'],
-    ['P','KK'],
-    ['Q'],
-    ['R','LL'],
-]
 def get_bust_band_difference(cupsize):
-    for difference, cup_list in enumerate(BUST_DIFF_IDX):
-        if cupsize in cup_list:
+    for difference, cup_enum in enumerate(BreastCup):
+        if cup_enum.within_threshold(cupsize):
             return difference    
-    raise Exception(f"could not identify cupsize '{cupsize}' add to 'BUST_DIFF_IDX' list")
+    raise Exception(f"could not identify cupsize '{cupsize}' add to 'BreastCup' enum")
 
 # Approximates breasts weight in kg, derived from this chart https://i.imgur.com/QZBhze8.png
 def approximate_breast_weight(bust_band_diff):

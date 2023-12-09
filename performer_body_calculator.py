@@ -9,10 +9,11 @@ except ModuleNotFoundError:
     sys.exit()
 
 import body_tags
-from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize
+from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BreastCup, HipSize, BodyMassIndex
 
-TAG_CLASSES = [BodyShape, BodyType, HeightType, BreastSize, ButtSize]
+TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BreastCup, HeightType, HipSize, BodyMassIndex]
 CM_TO_INCH = 2.54
+
 
 PERFORMER_FRAGMENT = """
 id
@@ -20,6 +21,7 @@ name
 measurements
 weight
 height_cm
+ethnicity
 gender
 """
 
@@ -67,6 +69,9 @@ def run_calculator():
 
     log.info("Parsing Performers...")
     for p in performers:
+        if p.gender != 'FEMALE':
+            continue
+
         p_id = f"{p['name']} ({p['id']})"
         try:
             p = StashPerformer(p)
@@ -93,6 +98,7 @@ def run_calculator():
 class StashPerformer:
 
     def __init__(self, resp) -> None:
+        log.debug(f"resp={resp}")
 
         self.__dict__.update(resp)
 
@@ -100,18 +106,28 @@ class StashPerformer:
         self.band           = None
         self.waist          = None
         self.hips           = None
+
         self.bust           = None
         self.bust_band_diff = None
         self.breast_volume  = None
-        
+        self.breastcup      = None #enum
+
+        self.hipsize        = None #enum
+
+        self.bmitag         = None #enum
         self.bmi = 0
         self.body_shapes = []
         self.descriptor = None
 
         self.parse_measurements()
         self.calculate_bmi()
+        self.set_bmitag()
 
         self.set_breast_size()
+        self.set_breast_cup()
+
+        self.set_hip_size()
+
         self.set_butt_size()
 
         self.set_height_type()
@@ -209,6 +225,14 @@ class StashPerformer:
             return
         self.breast_size = BreastSize.match_threshold(self.breast_volume)
 
+    def set_breast_cup(self):
+        log.debug(f"{self.cupsize=}")
+        self.breastcup = body_tags.calculate_cup(self)
+        log.debug(f"{self.breastcup=}")
+
+    def set_hip_size(self):
+        self.hip_size = body_tags.calculate_hip_size(self)
+
     def set_butt_size(self):
         self.butt_size = None
         if not self.hips:
@@ -226,6 +250,12 @@ class StashPerformer:
             self.height_type = HeightType.match_threshold(self.height_cm)
         log.debug("height_type: " + str(self.height_type))
 
+    def set_bmitag(self):
+        log.debug(f"{self.height_cm=}\n{self.weight=}\n{self.bmi=}")
+        bmitag = body_tags.calculate_bmi(self)
+        log.debug(f"{bmitag=}")
+        self.bmitag = bmitag
+
     def get_tag_updates(self, tag_updates={}):
         for body_shape in self.body_shapes:
             tag_updates[body_shape].append(self.id)
@@ -235,6 +265,15 @@ class StashPerformer:
             tag_updates[self.breast_size].append(self.id)
         if self.butt_size:
             tag_updates[self.butt_size].append(self.id)
+        if self.breastcup:
+            log.debug(f"{self.breastcup=}")
+            tag_updates[self.breastcup].append(self.id)
+        if self.hip_size:
+            log.debug(f"{self.hip_size=}")
+            tag_updates[self.hip_size].append(self.id)
+        if self.bmitag:
+            log.debug(f"{self.bmitag=}")
+            tag_updates[self.bmitag].append(self.id)
         if self.height_type:
             tag_updates[self.height_type].append(self.id)
 
@@ -259,6 +298,7 @@ class StashPerformer:
 def enumtag_stash_init(enum_class, tag_id_list=[], enum_dict={}):
     for enum in enum_class:
         enum.tag_id = stash.find_tag(enum.value.tag_create_input(), create=True)["id"]
+        log.debug(f"{enum.tag_id}")
         tag_id_list.append(enum.tag_id)
         enum_dict[enum] = []
     return tag_id_list, enum_dict
