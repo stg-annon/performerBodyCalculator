@@ -1,4 +1,3 @@
-import math
 import operator
 from enum import Enum
 
@@ -164,9 +163,9 @@ class BodyType(StashTagEnumComparable):
 # https://thebonescience.com/blogs/journal/average-height-around-the-world
 # height standard deviation (global)
 # https://www.nber.org/system/files/working_papers/h0108/h0108.pdf
+F_HEIGHT_MEAN = 164.7
+F_HEIGHT_SD = 7.07
 class HeightType(StashTagEnumComparable):
-    F_HEIGHT_MEAN = 164.7
-    F_HEIGHT_SD = 7.07
     SHORT   = StashTagDC("Short",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
     MEDIUM  = StashTagDC("Medium",  threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
     TALL    = StashTagDC("Tall",   threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))

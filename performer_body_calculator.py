@@ -224,9 +224,9 @@ class StashPerformer:
         self.breast_size = BreastSize.match_threshold(self.breast_volume)
 
     def set_breast_cup(self):
-        log.debug(f"self.cupsize={self.cupsize}")
+        log.debug(f"{self.cupsize=}")
         self.breastcup = body_tags.calculate_cup(self)
-        log.debug(f"self.breastcup={self.breastcup}")
+        log.debug(f"{self.breastcup=}")
 
     def set_hip_size(self):
         self.hip_size = body_tags.calculate_hip_size(self)
@@ -238,11 +238,9 @@ class StashPerformer:
         self.butt_size = ButtSize.match_threshold(self.hips)
 
     def set_bmitag(self):
-        log.debug(f"height_cm={self.height_cm}")
-        log.debug(f"weight={self.weight}")
-        log.debug(f"bmi={self.bmi}")
+        log.debug(f"{self.height_cm=}\n{self.weight=}\n{self.bmi=}")
         bmitag = body_tags.calculate_bmi(self)
-        log.debug(f"bmitag={bmitag}")
+        log.debug(f"{bmitag=}")
         self.bmitag = bmitag
 
     def get_tag_updates(self, tag_updates={}):
@@ -255,13 +253,13 @@ class StashPerformer:
         if self.butt_size:
             tag_updates[self.butt_size].append(self.id)
         if self.breastcup:
-            log.debug(f"self.breastcup={self.breastcup}")
+            log.debug(f"{self.breastcup=}")
             tag_updates[self.breastcup].append(self.id)
         if self.hip_size:
-            log.debug(f"self.hip_size={self.hip_size}")
+            log.debug(f"{self.hip_size=}")
             tag_updates[self.hip_size].append(self.id)
         if self.bmitag:
-            log.debug(f"self.bmitag={self.bmitag}")
+            log.debug(f"{self.bmitag=}")
             tag_updates[self.bmitag].append(self.id)
 
     def __str__(self) -> str:
