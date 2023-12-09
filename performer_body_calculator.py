@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 import body_tags
 from body_tags import BodyShape, HeightType, BodyType, BreastSize, ButtSize, BreastCup, HipSize, BodyMassIndex
 
-TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BreastCup, HipSize, BodyMassIndex]
+TAG_CLASSES = [BodyShape, BodyType, BreastSize, ButtSize, BreastCup, HeightType, HipSize, BodyMassIndex]
 CM_TO_INCH = 2.54
 
 
@@ -130,6 +130,8 @@ class StashPerformer:
 
         self.set_butt_size()
 
+        self.set_height_type()
+
         self.match_body_shapes()
         self.set_type_descriptor()
          
@@ -236,6 +238,17 @@ class StashPerformer:
         if not self.hips:
             return
         self.butt_size = ButtSize.match_threshold(self.hips)
+    
+    def set_height_type(self):
+        self.height_type = None
+        # only tuned on female heights
+        if not self.height_cm or self.gender != 'FEMALE':
+            return
+        if self.height_cm > 160 and self.height_cm < 180:
+            self.height_type = HeightType.AVERAGE
+        else:
+            self.height_type = HeightType.match_threshold(self.height_cm)
+        log.debug("height_type: " + str(self.height_type))
 
     def set_bmitag(self):
         log.debug(f"{self.height_cm=}\n{self.weight=}\n{self.bmi=}")
@@ -261,6 +274,8 @@ class StashPerformer:
         if self.bmitag:
             log.debug(f"{self.bmitag=}")
             tag_updates[self.bmitag].append(self.id)
+        if self.height_type:
+            tag_updates[self.height_type].append(self.id)
 
     def __str__(self) -> str:
         body_shapes = ",".join([s.name for s in self.body_shapes])
