@@ -11,4 +11,8 @@ If the `Measurements` attribute is present, it will be used to calculate the per
 If the `Height` and `Weight` attributes are both present, they will be used to calculate the performer's body type.
 
 ### Tags
-The tags will be generated or will use existing tags if there exists a tag with a matching name. The tag names can be customized by changing the first parameter of the `StashTagDC` input in `body_tags.py`
+The tags will be generated or will use existing tags, the plugin looks for tags based of its alias so you can rename or merge a tag into whatever you like as long as the generated alias is present in the tag, the alias the plugin will look for starts with `PDT:`
+
+### Config
+rename `example_config.py` to `config.py`
+if you den't want specific tags you can comment them out in the config
