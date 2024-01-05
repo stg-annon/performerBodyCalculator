@@ -97,7 +97,7 @@ def enumtag_stash_init(enum_class, tag_id_list=[]):
         if stash_tag:
             enum.tag_id = stash_tag["id"]
         else:
-            tag_create_input = enum.value.tag_create_input(str(enum), tag_alias_id)
+            tag_create_input = enum.value.tag_create_input(enum_class.get_class_display_name(), str(enum), tag_alias_id)
             enum.tag_id = stash.find_tag(tag_create_input, create=True)["id"]
         tag_id_list.append(enum.tag_id)
     return tag_id_list

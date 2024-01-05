@@ -4,13 +4,17 @@ from dataclasses import dataclass, field
 
 @dataclass
 class StashTagDC:
+    name: str = None
     threshold: tuple = None
     description: str = ""
     aliases: list[str] = field(default_factory=list)
     image: str = None
 
-    def tag_create_input(self, tag_name, alias_id):
-        create_input = {"name": tag_name}
+    def tag_create_input(self, class_name, tag_name, alias_id):
+        if self.name and class_name != "":
+            create_input = {"name": class_name + ": " + self.name}
+        else:
+            create_input = {"name": tag_name}
         create_input["description"] =  "[Managed By: PBC Plugin]\n"+self.description
         self.aliases.append(alias_id)
         create_input["aliases"] = self.aliases
@@ -23,6 +27,11 @@ class StashTagEnum(Enum):
         return f"{self.__class__.__name__}.{self.name}"
     def __str__(self) -> str:
         return f"{self.__class__.__name__}.{self.name}"
+
+    @classmethod
+    def get_class_display_name(cls):
+        return ""
+
 
 class StashTagEnumComparable(StashTagEnum):
     def __new__(cls, *args):
@@ -60,98 +69,118 @@ class StashTagEnumComparable(StashTagEnum):
 
 # body mass index determined from calculate_bmi()
 class BodyMassIndex(StashTagEnum):
-    SEVERELY_UNDERWEIGHT = StashTagDC(description='BMI: Severely Underweight')
-    UNDERWEIGHT = StashTagDC(description='BMI: Underweight')
-    HEALTHY = StashTagDC(description='BMI: Healthy')
-    OVERWEIGHT = StashTagDC(description='BMI: Overweight')
-    OBESE_CLASS_1 = StashTagDC(description='BMI: Obese Class 1')
-    OBESE_CLASS_2 = StashTagDC(description='BMI: Obese Class 2')
-    SEVERELY_OBESE = StashTagDC(description='BMI: Extremely Obese')
+    SEVERELY_UNDERWEIGHT = StashTagDC("Severely Underweight", description='BMI: Severely Underweight')
+    UNDERWEIGHT = StashTagDC("Underweight", description='BMI: Underweight')
+    HEALTHY = StashTagDC("Healthy", description='BMI: Healthy')
+    OVERWEIGHT = StashTagDC("Overweight", description='BMI: Overweight')
+    OBESE_CLASS_1 = StashTagDC("Obese Class 1", description='BMI: Obese Class 1')
+    OBESE_CLASS_2 = StashTagDC("Obese Class 2", description='BMI: Obese Class 2')
+    SEVERELY_OBESE = StashTagDC("Extremely Obese", description='BMI: Extremely Obese')
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "BMI"
 
 class HipSize(StashTagEnum):
-    WIDE = StashTagDC()
-    MEDIUM = StashTagDC()
-    SLIM = StashTagDC()
+    WIDE = StashTagDC("Wide")
+    MEDIUM = StashTagDC("Medium")
+    SLIM = StashTagDC("Slim")
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Hip Size"
 
 class BreastCup(StashTagEnumComparable):
-    AA = StashTagDC(threshold=(operator.contains, ['AA']))
-    A  = StashTagDC(threshold=(operator.contains, ['A']))
-    B  = StashTagDC(threshold=(operator.contains, ['B']))
-    C  = StashTagDC(threshold=(operator.contains, ['C']))
-    D  = StashTagDC(threshold=(operator.contains, ['D']))
-    E  = StashTagDC(threshold=(operator.contains, ['E','DD']))
-    F  = StashTagDC(threshold=(operator.contains, ['F','DDD','EE']))
-    G  = StashTagDC(threshold=(operator.contains, ['G','DDDD']))
-    H  = StashTagDC(threshold=(operator.contains, ['H','FF']))
-    I  = StashTagDC(threshold=(operator.contains, ['I']))
-    J  = StashTagDC(threshold=(operator.contains, ['J','GG']))
-    K  = StashTagDC(threshold=(operator.contains, ['K']))
-    L  = StashTagDC(threshold=(operator.contains, ['L','HH']))
-    M  = StashTagDC(threshold=(operator.contains, ['M']))
-    N  = StashTagDC(threshold=(operator.contains, ['N','JJ']))
-    O  = StashTagDC(threshold=(operator.contains, ['O']))
-    P  = StashTagDC(threshold=(operator.contains, ['P','KK']))
-    Q  = StashTagDC(threshold=(operator.contains, ['Q']))
-    R  = StashTagDC(threshold=(operator.contains, ['R','LL']))
+    AA = StashTagDC("AA", threshold=(operator.contains, ['AA']))
+    A  = StashTagDC("A", threshold=(operator.contains, ['A']))
+    B  = StashTagDC("B", threshold=(operator.contains, ['B']))
+    C  = StashTagDC("C", threshold=(operator.contains, ['C']))
+    D  = StashTagDC("D", threshold=(operator.contains, ['D']))
+    E  = StashTagDC("E", threshold=(operator.contains, ['E','DD']))
+    F  = StashTagDC("F", threshold=(operator.contains, ['F','DDD','EE']))
+    G  = StashTagDC("G", threshold=(operator.contains, ['G','DDDD']))
+    H  = StashTagDC("H", threshold=(operator.contains, ['H','FF']))
+    I  = StashTagDC("I", threshold=(operator.contains, ['I']))
+    J  = StashTagDC("J", threshold=(operator.contains, ['J','GG']))
+    K  = StashTagDC("K", threshold=(operator.contains, ['K']))
+    L  = StashTagDC("L", threshold=(operator.contains, ['L','HH']))
+    M  = StashTagDC("M", threshold=(operator.contains, ['M']))
+    N  = StashTagDC("N", threshold=(operator.contains, ['N','JJ']))
+    O  = StashTagDC("O", threshold=(operator.contains, ['O']))
+    P  = StashTagDC("P", threshold=(operator.contains, ['P','KK']))
+    Q  = StashTagDC("Q", threshold=(operator.contains, ['Q']))
+    R  = StashTagDC("R", threshold=(operator.contains, ['R','LL']))
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Cup Size"
 
 # shape determined from calculate_shape()
 class BodyShape(StashTagEnum):
     HOURGLASS = StashTagDC(
-        "Figure: Hourglass",
+        "Hourglass",
         image="https://user-images.githubusercontent.com/14135675/225106804-d573bba1-7ca2-4c55-b1e1-d858c03040be.jpg",
         description='Hourglass:\nIf hips and bust are nearly equal in size with a well-defined waist that’s narrower than both.\n\nLegs and upper body are probably considered proportionate.\n\nShoulders may be slightly rounded, and most likely has a rounded buttocks.'
     )
     BOTTOM_HOURGLASS = StashTagDC(
-        "Figure: Bottom Hourglass",
+        "Bottom Hourglass",
         image="https://user-images.githubusercontent.com/14135675/225106797-c818b1ab-d82d-4130-8184-b661c9fd7b44.jpg",
         description='Bottom hourglass:\nHas the general hourglass shape, but hip measurements are slightly larger than bust.'
     )
     TOP_HOURGLASS = StashTagDC(
-        "Figure: Top Hourglass",
+        "Top Hourglass",
         image="https://user-images.githubusercontent.com/14135675/225106819-6462ac6a-8ca7-41ac-9cd5-467c9c80e7f1.jpg",
         description='Top hourglass:\nHas the general hourglass shape, but bust measurements are slightly larger than hips.'
     )
     SPOON = StashTagDC(
-        "Figure: Spoon",
+        "Spoon",
         image="https://user-images.githubusercontent.com/14135675/225106816-574eee46-d14c-4869-9137-6477bdedd2d5.jpg",
         description='Spoon:\nThe spoon body type is similar to the Triangle or “Pear” shape.\n\nHips are larger than bust or the rest of body and may have a “shelf”-like appearance.\n\nLikely has a defined waist. May also carry some weight in upper arms and upper thighs.'
     )
     TRIANGLE = StashTagDC(
-        "Figure: Triangle",
+        "Triangle",
         image="https://user-images.githubusercontent.com/14135675/225106820-6b8d71a7-3ba1-4aec-a763-a4e52e71363b.jpg",
         description='Triangle / “Pear”:\nShoulders and bust are narrower than hips.\n\nLikely to have slim arms and a fairly defined waist. waist most likely slopes out to hips.'
     )
     INVERTED_TRIANGLE = StashTagDC(
-        "Figure: Inverted Triangle",
+        "Inverted Triangle",
         image="https://user-images.githubusercontent.com/14135675/225106808-38ff54fa-a8cd-4f2e-b9b7-ae8ec6371357.jpg",
         description='Inverted triangle / “Apple”:\nShoulders and bust are larger than relatively narrow hips.'
     )
     RECTANGLE = StashTagDC(
-        "Figure: Rectangle",
+        "Rectangle",
         image="https://user-images.githubusercontent.com/14135675/225106815-a4afdeda-835a-4888-b581-f382c18f3487.jpg",
         description='Rectangle / Straight / “Banana”:\nWaist measurements are about the same as hip or bust, and shoulders and hips are about the same width.'
     )
     DIAMOND = StashTagDC(
-        "Figure: Diamond",
+        "Diamond",
         image="https://user-images.githubusercontent.com/14135675/225106802-8cb88df8-7804-4f1f-a65c-c6e86a64698d.jpg",
         description='Diamond:\nBroader hips than shoulders, a narrow bust, and a fuller waistline.\n\nMay carry a little more weight in upper legs. May also have slender arms.'
     )
     OVAL = StashTagDC(
-        "Figure: Oval",
+        "Oval",
         image="https://user-images.githubusercontent.com/14135675/225106814-e80f5cfe-c467-4b91-bd27-d9360dbb0894.jpg",
         description='Round / Oval:\nBust is larger than the rest of body, hips are narrow, and waist is fuller.'
     )
 
+    @classmethod
+    def get_class_display_name(cls):
+        return "Figure"
+
 CURVY_SHAPES = [BodyShape.TOP_HOURGLASS, BodyShape.BOTTOM_HOURGLASS, BodyShape.HOURGLASS]
 class BodyType(StashTagEnumComparable):
     # threshold based off of performer.bmi
-    PETITE  = StashTagDC(threshold=None)
-    CURVY   = StashTagDC(threshold=None)
-    SKINNY  = StashTagDC(threshold=(operator.lt, 18))
-    FIT     = StashTagDC(threshold=(operator.lt, 23))
-    AVERAGE = StashTagDC(threshold=(operator.lt, 29))
-    BBW     = StashTagDC(threshold=(operator.lt, 55))
-    SSBBW   = StashTagDC(threshold=(operator.ge, 55))
+    PETITE  = StashTagDC("Petite", threshold=None)
+    CURVY   = StashTagDC("Curvy", threshold=None)
+    SKINNY  = StashTagDC("Skinny", threshold=(operator.lt, 18))
+    FIT     = StashTagDC("Fit", threshold=(operator.lt, 23))
+    AVERAGE = StashTagDC("Average", threshold=(operator.lt, 29))
+    BBW     = StashTagDC("BBW", threshold=(operator.lt, 55))
+    SSBBW   = StashTagDC("SSBBW", threshold=(operator.ge, 55))
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Body Type"
 
 # https://ourworldindata.org/human-height
 # current implementation uses global average
@@ -165,27 +194,39 @@ F_HEIGHT_MEAN = 164.7
 F_HEIGHT_SD = 7.07
 class HeightType(StashTagEnumComparable):
     # threshold based off of performer.height_cm
-    SHORT   = StashTagDC(threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
-    AVERAGE  = StashTagDC(threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
-    TALL    = StashTagDC(threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))
+    SHORT   = StashTagDC("Short", threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    AVERAGE  = StashTagDC("Average", threshold=(operator.le, F_HEIGHT_MEAN - F_HEIGHT_SD))
+    TALL    = StashTagDC("Tall", threshold=(operator.ge, F_HEIGHT_MEAN + F_HEIGHT_SD))
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Height"
 
 class BreastSize(StashTagEnumComparable):
     # threshold based off of performer.breast_volume
-    TINY    = StashTagDC(threshold=(operator.lt, 16))
-    SMALL   = StashTagDC(threshold=(operator.lt, 19))
-    MEDIUM  = StashTagDC(threshold=(operator.lt, 23))
-    LARGE   = StashTagDC(threshold=(operator.lt, 27))
-    HUGE    = StashTagDC(threshold=(operator.lt, 31))
-    MASSIVE = StashTagDC(threshold=(operator.ge, 31))
+    TINY    = StashTagDC("Tiny", threshold=(operator.lt, 16))
+    SMALL   = StashTagDC("Small", threshold=(operator.lt, 19))
+    MEDIUM  = StashTagDC("Medium", threshold=(operator.lt, 23))
+    LARGE   = StashTagDC("Large", threshold=(operator.lt, 27))
+    HUGE    = StashTagDC("Huge", threshold=(operator.lt, 31))
+    MASSIVE = StashTagDC("Massive", threshold=(operator.ge, 31))
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Breast Size"
 
 class ButtSize(StashTagEnumComparable):
     # threshold based off of performer.hips 
-    TINY    = StashTagDC(threshold=(operator.lt, 28))
-    SMALL   = StashTagDC(threshold=(operator.lt, 32))
-    MEDIUM  = StashTagDC(threshold=(operator.lt, 40))
-    LARGE   = StashTagDC(threshold=(operator.lt, 44))
-    HUGE    = StashTagDC(threshold=(operator.lt, 48))
-    MASSIVE = StashTagDC(threshold=(operator.ge, 48))
+    TINY    = StashTagDC("Tiny", threshold=(operator.lt, 28))
+    SMALL   = StashTagDC("Small", threshold=(operator.lt, 32))
+    MEDIUM  = StashTagDC("Medium", threshold=(operator.lt, 40))
+    LARGE   = StashTagDC("Large", threshold=(operator.lt, 44))
+    HUGE    = StashTagDC("Huge", threshold=(operator.lt, 48))
+    MASSIVE = StashTagDC("Massive", threshold=(operator.ge, 48))
+
+    @classmethod
+    def get_class_display_name(cls):
+        return "Butt Size"
 
 def calculate_hip_size(performer):
     if not performer.waist or not performer.hips:
